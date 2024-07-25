@@ -1,11 +1,13 @@
 """Module of methods for body part calculations."""
+
 import numpy as np
 import pandas as pd
-import matplotlib as plt
+
 
 def adjust_coordinates(trial_coords, output_path):
     """
-    Method to adjust the coordinates of the body parts in a video into the format needed for the analysis.
+    Method to adjust the coordinates of the body parts in a video into the
+      format needed for the analysis.
     Parameters
         ----------
         csv_file : str
@@ -17,13 +19,13 @@ def adjust_coordinates(trial_coords, output_path):
             A pandas DataFrame containing the body part coordinates.
     """
     df = pd.read_csv(trial_coords, header=None)
-    # Combine the rows that contain the names for the bodyparts and their corresponding coordinates
+    # Combine rows with bodypart names and their corresponding coordinates
     index0 = 0
     index1 = 1
     index2 = 2
 
     # Combine the values from both rows into a new row
-    combined_row = df.iloc[index1] + '_' + df.iloc[index2]
+    combined_row = df.iloc[index1] + "_" + df.iloc[index2]
 
     # Replace the original rows with the combined row
     df.iloc[index1] = combined_row
@@ -32,35 +34,40 @@ def adjust_coordinates(trial_coords, output_path):
     df = df.drop(index2)
     df = df.drop(index0)
 
-    new_header = df.iloc[0] #grab the first row for the header
-    df = df[1:] 
+    new_header = df.iloc[0]  # grab the first row for the header
+    df = df[1:]
     df.columns = new_header
 
     print(df.head())
 
-    df.to_csv(f'/{output_path}/adjusted_coords.csv', index = False)
+    df.to_csv(f"/{output_path}/adjusted_coords.csv", index=False)
 
     return df
 
+
 def velocity(csv_file, output_path, frame_rate, timing):
     df = pd.read_csv(csv_file)
-    
-    # Calculating average velocity in pixels/second (need to input the body parts of interest)
-    for column in df[['paw1_x', 'paw1_y', 'paw2_x', 'paw2_y']]:
-        df[f'{column}_velocity'] = df[column].diff() / timing
-    
+
+    # Calculating average velocity in pixels/second
+    for column in df[["paw1_x", "paw1_y", "paw2_x", "paw2_y"]]:
+        df[f"{column}_velocity"] = df[column].diff() / timing
+
     # Calculating overall velocity of a body part
-    df['paw1_velocity'] = np.sqrt((df['paw1_x_velocity'] ** 2) + (df['paw1_y_velocity'] ** 2))
-    df['paw2_velocity'] = np.sqrt((df['paw2_x_velocity'] ** 2) + (df['paw2_y_velocity'] ** 2))
-    
+    df["paw1_velocity"] = np.sqrt(
+        (df["paw1_x_velocity"] ** 2) + (df["paw1_y_velocity"] ** 2)
+    )
+    df["paw2_velocity"] = np.sqrt(
+        (df["paw2_x_velocity"] ** 2) + (df["paw2_y_velocity"] ** 2)
+    )
+
     # Calculating normalized velocity
-    df['paw1_velocity'] = df['paw1_velocity'] / df['paw1_velocity'].max()
-    df['paw2_velocity'] = df['paw2_velocity'] / df['paw2_velocity'].max()
-    
+    df["paw1_velocity"] = df["paw1_velocity"] / df["paw1_velocity"].max()
+    df["paw2_velocity"] = df["paw2_velocity"] / df["paw2_velocity"].max()
+
     # Converting the frame indices to time for plotting purposes
-    df['x_rescaled'] = df['bodyparts_coords'] / (frame_rate) 
-    
+    df["x_rescaled"] = df["bodyparts_coords"] / (frame_rate)
+
     # Saving the velocity calculations into a csv file for further analysis
-    df.to_csv(f'/{output_path}/paw_velocity.csv', index = False)
-    
+    df.to_csv(f"/{output_path}/paw_velocity.csv", index=False)
+
     return df
