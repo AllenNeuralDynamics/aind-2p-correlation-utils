@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 
-def adjust_coordinates(trial_coords, output_path):
+def adjust_coordinates(trial_coords):
     """
     Method to adjust the coordinates of the body parts in a video into the
       format needed for the analysis.
@@ -40,12 +40,12 @@ def adjust_coordinates(trial_coords, output_path):
 
     print(df.head())
 
-    df.to_csv(f"/{output_path}/adjusted_coords.csv", index=False)
+    #df.to_csv(f"/{output_path}/adjusted_coords.csv", index=False)
 
     return df
 
 
-def velocity(csv_file, output_path, frame_rate, timing):
+def velocity(csv_file, frame_rate, timing):
     df = pd.read_csv(csv_file)
 
     # Calculating average velocity in pixels/second
@@ -68,6 +68,6 @@ def velocity(csv_file, output_path, frame_rate, timing):
     df["x_rescaled"] = df["bodyparts_coords"] / (frame_rate)
 
     # Saving the velocity calculations into a csv file for further analysis
-    df.to_csv(f"/{output_path}/paw_velocity.csv", index=False)
+    #df.to_csv(f"/{output_path}/paw_velocity.csv", index=False)
 
     return df
