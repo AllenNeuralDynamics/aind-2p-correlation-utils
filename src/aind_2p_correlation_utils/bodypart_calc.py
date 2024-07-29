@@ -40,8 +40,6 @@ def adjust_coordinates(trial_coords):
 
     print(df.head())
 
-    #df.to_csv(f"/{output_path}/adjusted_coords.csv", index=False)
-
     return df
 
 
@@ -66,8 +64,5 @@ def velocity(csv_file, frame_rate, timing):
 
     # Converting the frame indices to time for plotting purposes
     df["x_rescaled"] = df["bodyparts_coords"] / (frame_rate)
-
-    # Saving the velocity calculations into a csv file for further analysis
-    #df.to_csv(f"/{output_path}/paw_velocity.csv", index=False)
 
     return df
