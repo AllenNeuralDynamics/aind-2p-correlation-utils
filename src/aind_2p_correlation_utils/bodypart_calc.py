@@ -2,7 +2,7 @@
 import numpy as np
 import pandas as pd
 
-def adjust_coordinates(trial_coords):
+def adjust_coordinates(df):
     """
     Method to adjust the coordinates of the body parts in a video into the format needed for the analysis.
     Parameters
@@ -15,7 +15,7 @@ def adjust_coordinates(trial_coords):
         df : DataFrame
             A pandas DataFrame containing the body part coordinates.
     """
-    df = pd.read_csv(trial_coords, header=None)
+    # df = pd.read_csv(trial_coords, header=None)
     # Combine the rows that contain the names for the bodyparts and their corresponding coordinates
     index0 = 0
     index1 = 1
@@ -40,8 +40,8 @@ def adjust_coordinates(trial_coords):
     return df
 
 
-def velocity(csv_file, frame_rate, timing):
-    df = pd.read_csv(csv_file)
+def velocity(df, frame_rate, timing):
+    #df = pd.read_csv(csv_file)
    
     # Identifying body part columns
     body_parts = set([col.split('_')[0] for col in df.columns if '_' in col])
@@ -62,23 +62,3 @@ def velocity(csv_file, frame_rate, timing):
     df['x_rescaled'] = df.index / frame_rate
    
     return df
-
-
-# def velocity_graph(csv_file, output_path):
-#     df = pd.read_csv(csv_file)
-    
-#     body_parts = set([col.split('_')[0] for col in df.columns if '_' in col])
-    
-#     for body_part in body_parts:
-#         x_col = f'{body_part}_x'
-#         y_col = f'{body_part}_y'
-    
-#     for column in df[f'{body_part}_velocity']:
-#         plt.figure()
-#         plt.plot(df['x_rescaled'], df[column])
-#         plt.ylabel('Normalized velocity')
-#         plt.xlabel('Time (s)')
-#         plt.grid(True)
-#         plt.savefig(f'/{output_path}/{bodypart}.png')
-        
-#     return df
