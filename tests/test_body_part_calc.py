@@ -16,7 +16,6 @@ from aind_2p_correlation_utils.io_utils import (
 )
 
 TEST_DIR = Path(os.path.dirname(os.path.realpath(__file__)))
-RESOURCES_DIR = TEST_DIR / "resources"
 TRIAL_COORD_FILE = TEST_DIR / "resources" / "corr_test.csv"
 EXPECTED_SPEED_DF = TEST_DIR / "resources" / "expected_speed_df.csv"
 
