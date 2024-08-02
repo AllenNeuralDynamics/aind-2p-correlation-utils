@@ -3,7 +3,6 @@
 import numpy as np
 import pandas as pd
 
-
 def rename_columns(df: pd.DataFrame) -> None:
     """
     Renames the columns of a pandas DataFrame to make it usable in a method
@@ -72,9 +71,11 @@ def add_speed_columns(df: pd.DataFrame, frame_rate: float) -> None:
 
     """
 
-    # Identifying body part columns
-    body_parts = set([col.split("_")[0] for col in df.columns if "_" in col])
-
+    # Identifying body part columns: first line for keypoints with a singular underscore after renaming (e.g. paw_x)
+    # The second line is for keypoint names with multiple undescores (e.g. whisker_root_x)
+    #body_parts = set([col.split("_")[0] for col in df.columns if "_" in col])
+    body_parts = set([col.rsplit('_', 1)[0] for col in df.columns[7:] if '_' in col])
+    
     for body_part in body_parts:
         x_col = f"{body_part}_x"
         y_col = f"{body_part}_y"
