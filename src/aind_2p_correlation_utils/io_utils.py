@@ -1,21 +1,56 @@
-import pandas as pd
+"""Module for methods in reading and writing data"""
+
 from pathlib import Path
-import os
 
-TEST_DIR = Path(os.path.dirname(os.path.realpath(__file__)))
-RESOURCES_DIR = TEST_DIR / "resources"
+from pandas import DataFrame, read_csv
 
-trial_coords = RESOURCES_DIR / "corr_test.csv"
-adj_coords = RESOURCES_DIR / "adjusted_coords.csv"
 
-def trial_coordinates(trial_coords):
-    
-    df = pd.read_csv(trial_coords, header=None)
+def read_trial_coordinates(trial_coords: Path) -> DataFrame:
+    """
+    Read a file containing trial coordinates and returns a pandas DataFrame.
+    The csv file is expected to look like:
+    scorer,heatmap_tracker,...,heatmap_tracker
+    bodyparts,paw1,paw1,paw1,paw2,paw2,paw2
+    coords,x,y,likelihood,x,y,likelihood
+    0,633.45,326.82,0.99,417.58,328.60,0.99
+    1,633.34,327.42,0.99,418.41,328.23,0.99
+
+    Parameters
+    ----------
+    trial_coords : Path
+      Location of the file containing the trial coordinates
+
+    Returns
+    -------
+    DataFrame
+
+      The output df might look like:
+      scorer    heatmap_tracker
+      bodyparts            paw1                       paw2
+      coords                  x       y likelihood       x       y likelihood
+      0                  633.45  326.82       0.99  417.58  328.60       0.99
+      1                  633.34  327.42       0.99  418.41  328.23       0.99
+    """
+
+    df = read_csv(trial_coords, header=[0, 1, 2], index_col=0)
 
     return df
 
-def velocity_coordinates(adj_coords):
-        
-    df = pd.read_csv(adj_coords)
-        
+
+def read_speed_coordinates(speed_coords: Path) -> DataFrame:
+    """
+    Read a file containing speed coordinates and returns a pandas DataFrame.
+    Parameters
+    ----------
+    speed_coords : Path
+      Location of the file containing the speed coordinates
+
+    Returns
+    -------
+    DataFrame
+
+    """
+
+    df = read_csv(speed_coords, index_col=0)
+
     return df
