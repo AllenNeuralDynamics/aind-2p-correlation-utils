@@ -54,7 +54,6 @@ exclude = '''
     | _build
     | build
     | dist
-    | \.conda
   )/
   | .gitignore
 )
@@ -78,5 +77,5 @@ line_length = 79
 profile = "black"
 
 [tool.interrogate]
-exclude = ["setup.py", "docs", "build", ".conda"]
+exclude = ["setup.py", "docs", "build"]
 fail-under = 100
