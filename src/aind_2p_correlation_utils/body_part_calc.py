@@ -1,7 +1,10 @@
 """Module of methods for body part calculations."""
 
+import scipy
 import numpy as np
 import pandas as pd
+from scipy import ndimage
+from numpy import genfromtxt
 from scipy.signal import oaconvolve
 
 def rename_columns(df: pd.DataFrame) -> None:
@@ -110,6 +113,23 @@ def add_speed_columns(df: pd.DataFrame, frame_rate: float) -> None:
 
     # Function modifies df inplace
     return None
+
+def speed_median(speed_data):
+    """
+    Passes a NumPy array through a median filter.
+
+    Parameters
+    ----------
+    speed_data: NumPy array
+    Array with normalized speed values for the body parts in question
+
+    Returns
+    -------
+    NumPy array
+    Returns a NumPy array of the same length as the input but with filtered values
+    """
+    filtered = scipy.ndimage.median_filter(speed_data[:,[-3,-2,-1]], size=20)
+    return filtered
 
 def speed_convolution(values_list, body_part, time): 
     """
