@@ -2,6 +2,7 @@
 
 import numpy as np
 import pandas as pd
+from scipy.signal import oaconvolve
 
 def rename_columns(df: pd.DataFrame) -> None:
     """
@@ -108,4 +109,31 @@ def add_speed_columns(df: pd.DataFrame, frame_rate: float) -> None:
     df["time (seconds)"] = df.index / frame_rate
 
     # Function modifies df inplace
+    return None
+
+def speed_convolution(values_list, body_part, time): 
+    """
+    Takes an empty list, a NumPy array with speed values for a body part, and 
+    a NumPy array with values for time in seconds.
+
+    Parameters
+    ----------
+    values_list : List
+    An empty list
+    body_part : NumPy array
+    Pixels per second values that have been passed through median filtering.
+    time: NumPy array
+    Values in seconds, every value corresponds to a time frame in the original data set.
+
+    Returns
+    -------
+    None
+    Appends the convoluted values to the originally empty list. 
+    """
+    exp_decay = np.exp(-time)
+
+    # Perform the convolution
+    S = oaconvolve(body_part, exp_decay, mode='same')
+    values_list.append(S)
+
     return None
