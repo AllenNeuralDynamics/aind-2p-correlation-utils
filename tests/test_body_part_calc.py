@@ -4,11 +4,14 @@ import os
 import unittest
 from pathlib import Path
 
+from numpy.testing import assert_array_equal
 from pandas.testing import assert_frame_equal
 
 from aind_2p_correlation_utils.body_part_calc import (
     add_speed_columns,
     rename_columns,
+    speed_median,
+    speed_convolution,
 )
 from aind_2p_correlation_utils.io_utils import (
     read_speed_coordinates,
@@ -18,7 +21,8 @@ from aind_2p_correlation_utils.io_utils import (
 TEST_DIR = Path(os.path.dirname(os.path.realpath(__file__)))
 TRIAL_COORD_FILE = TEST_DIR / "resources" / "corr_test.csv"
 EXPECTED_SPEED_DF = TEST_DIR / "resources" / "expected_speed_df.csv"
-
+EXPECTED_SPEED_MEDIAN = TEST_DIR / "resources" / #TODO
+EXPECTED_SPEED_CONVOLUTION = TEST_DIR / "resources" / #TODO
 
 class TestBodyPartCalculation(unittest.TestCase):
     """Tests methods in bodypart_calc module."""
@@ -61,6 +65,19 @@ class TestBodyPartCalculation(unittest.TestCase):
         # check_like to True
         assert_frame_equal(expected_speed_df, trial_coord_df, check_like=True)
 
+    def test_speed_median(self):
+        """Tests the speed_median method."""
+        test_speed_array = test_speed_array.copy(deep=True) #TODO
+        expected_speed_median = self.expected_speed_median.copy(deep=True) #TODO
+        speed_median(test_speed_array)   
+        assert_array_equal(expected_speed_median, test_speed_array)
+
+    def test_speed_convolution(self):
+        """Tests the speed_convolution method."""
+        test_speed_conv = test_speed_conv.copy(deep=True) #TODO
+        expected_speed_convolution = self.expected_speed_convolution.copy(deep=True) #TODO
+        speed_convolution(test_speed_conv)
+        assert_array_equal(expected_speed_convolution, test_speed_conv)
 
 if __name__ == "__main__":
     unittest.main()
