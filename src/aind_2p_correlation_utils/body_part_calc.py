@@ -111,7 +111,7 @@ def add_speed_columns(df: pd.DataFrame, frame_rate: float) -> None:
     # Function modifies df inplace
     return None
 
-def speed_convolution(values_list, body_part, time): 
+def speed_convolution(body_part, time): 
     """
     Takes an empty list, a NumPy array with speed values for a body part, and 
     a NumPy array with values for time in seconds.
@@ -130,10 +130,12 @@ def speed_convolution(values_list, body_part, time):
     None
     Appends the convoluted values to the originally empty list. 
     """
-    exp_decay = np.exp(-time)
+    t = np.linspace(np.min(time), np.max(time), len(time))
+
+    tau = 1 
+    exp_decay = np.exp(-t / tau)
 
     # Perform the convolution
     S = oaconvolve(body_part, exp_decay, mode='same')
-    values_list.append(S)
 
-    return None
+    return S
