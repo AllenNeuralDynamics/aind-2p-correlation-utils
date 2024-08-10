@@ -1,8 +1,13 @@
 """Module of methods for body part calculations."""
 
+import re
+
 import numpy as np
 import pandas as pd
-from scipy.signal import oaconvolve
+from scipy.ndimage import median_filter
+
+BODY_PART_COLUMN_PATTERN = re.compile(r"(.*)_.*$")
+
 
 def rename_columns(df: pd.DataFrame) -> None:
     """
@@ -24,7 +29,7 @@ def rename_columns(df: pd.DataFrame) -> None:
       Renames the DataFrame columns inplace to conserve memory. Output should
       look like:
                         paw1_x  paw1_y  paw1_l...d  paw2_x  paw2_y  paw2_l...d
-      bodyparts_coords
+      frames
       0                 633.45  326.82        0.99  417.58  328.60        0.99
       1                 633.34  327.42        0.99  418.41  328.23        0.99
 
@@ -40,7 +45,7 @@ def rename_columns(df: pd.DataFrame) -> None:
         new_column_names.append(new_name)
 
     df.columns = new_column_names[1:]
-    df.index.name = new_column_names[0]
+    df.index.name = "frames"
 
     # Function modifies df inplace
     return None
@@ -68,15 +73,23 @@ def add_speed_columns(df: pd.DataFrame, frame_rate: float) -> None:
       Appends the new columns to the df inplace. The new columns might look
       like:
       [paw1_x, paw1_y, paw1_likelihood, paw2_x, paw2_y, paw2_likelihood,
-      paw2_speed, paw1_speed, time (seconds)]
+      paw2_speed (pixels per second), paw1_speed (pixels per second),
+      time (seconds)]
 
     """
 
-    # Identifying body part columns: first line for keypoints with a singular underscore after renaming (e.g. paw_x)
-    # The second line is for keypoint names with multiple undescores (e.g. whisker_root_x)
-    #body_parts = set([col.split("_")[0] for col in df.columns if "_" in col])
-    body_parts = set([col.rsplit('_', 1)[0] for col in df.columns[7:] if '_' in col])
-    
+    # Identifying body part columns
+    body_parts = set(
+        [
+            re.match(BODY_PART_COLUMN_PATTERN, c).group(1)
+            for c in df.columns
+            if re.match(BODY_PART_COLUMN_PATTERN, c)
+        ]
+    )
+    time_series = df.index / frame_rate
+    df["time (seconds)"] = time_series
+    delta_t = df["time (seconds)"].diff()
+
     for body_part in body_parts:
         x_col = f"{body_part}_x"
         y_col = f"{body_part}_y"
@@ -88,54 +101,87 @@ def add_speed_columns(df: pd.DataFrame, frame_rate: float) -> None:
             # TODO: if we want to compute a velocity (speed and direction),
             #  we'll need to use a different calculation. This computes speed.
             delta_pixels = np.sqrt((delta_x**2) + (delta_y**2))
-            # Assuming no frames are skipped, then delta_frames is just 1
-            # and change of pixels per frame is just delta_pixels. Since
-            # we are normalizing the velocity in the next step, we don't need
-            # to convert pixels/frames to pixels/seconds here.
-            df[f"{body_part}_speed"] = delta_pixels
-            # Normalize by maximum speed.
-            # TODO: Maybe move the normalization to a separate function to
-            #  make it easier to replace if needed
-            df[f"{body_part}_speed"] = (
-                df[f"{body_part}_speed"] / df[f"{body_part}_speed"].max()
+            df[f"{body_part}_speed (pixels per second)"] = (
+                delta_pixels / delta_t
             )
-            # Rename speed column to convey that it is now normalized.
-            df.rename(
-                columns={f"{body_part}_speed": f"{body_part}_norm_speed"},
-                inplace=True,
-            )
-
-    # Converting the frame indices to time
-    df["time (seconds)"] = df.index / frame_rate
 
     # Function modifies df inplace
     return None
 
-def speed_convolution(body_part, time): 
-    """
-    Takes an empty list, a NumPy array with speed values for a body part, and 
-    a NumPy array with values for time in seconds.
 
+def apply_median_filter(df: pd.DataFrame, window_size: int = 3) -> None:
+    """
+    For each column in the dataframe with _speed in the name, it will apply a
+    median filter and modify the column in place.
     Parameters
     ----------
-    values_list : List
-    An empty list
-    body_part : NumPy array
-    Pixels per second values that have been passed through median filtering.
-    time: NumPy array
-    Values in seconds, every value corresponds to a time frame in the original data set.
+    df : pd.DataFrame
+    window_size : int
+      Default is 3.
 
     Returns
     -------
     None
-    Appends the convoluted values to the originally empty list. 
+
     """
-    t = np.linspace(np.min(time), np.max(time), len(time))
+    speed_columns = [c for c in df.columns if "_speed" in c]
+    for speed_column in speed_columns:
+        filtered = median_filter(df[speed_column], size=window_size)
+        df[speed_column] = filtered
 
-    tau = 1 
-    exp_decay = np.exp(-t / tau)
+    # Function modifies df inplace
+    return None
 
-    # Perform the convolution
-    S = oaconvolve(body_part, exp_decay, mode='same')
 
-    return S
+def apply_convolution(df: pd.DataFrame, tau: float = 1.0) -> None:
+    """
+    For each column in the dataframe with _speed in the name, it will convolve
+    it with an exponential decay kernel. The dataframe should have a time
+    series column named 'time (seconds)'.
+    Parameters
+    ----------
+    df : pd.DataFrame
+    tau : float
+      Decay factor. Default is 1.0
+
+    Returns
+    -------
+    None
+      Modifies the columns in place.
+
+    """
+    speed_columns = [c for c in df.columns if "_speed" in c]
+    time_axis = df["time (seconds)"]
+    kernel = np.exp(-time_axis / tau)
+    for speed_column in speed_columns:
+        speed = df[speed_column]
+        convolved = np.convolve(speed, kernel, mode="full")
+        convolved = convolved[: len(speed)]
+        df[speed_column] = convolved
+
+    # Function modifies df inplace
+    return None
+
+
+def normalize_speed(df: pd.DataFrame) -> None:
+    """
+    For each column in the dataframe with _speed in the name, it will add a
+    new column that is the column divided by its max value.
+    Parameters
+    ----------
+    df : pd.DataFrame
+
+    Returns
+    -------
+    None
+      Appends new columns to df in place.
+
+    """
+    speed_columns = [c for c in df.columns if "_speed" in c]
+    for speed_column in speed_columns:
+        max_speed = df[speed_column].max()
+        col_name = speed_column.replace("(pixels per second)", "(normalized)")
+        df[col_name] = df[speed_column] / max_speed
+
+    # Function modifies df inplace
+    return None
