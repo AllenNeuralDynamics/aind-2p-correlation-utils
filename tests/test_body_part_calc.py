@@ -4,7 +4,7 @@ import os
 import unittest
 from pathlib import Path
 
-from numpy.testing import assert_array_equal
+from numpy.testing import assert_allclose
 from pandas.testing import assert_frame_equal
 
 from aind_2p_correlation_utils.body_part_calc import (
@@ -113,9 +113,10 @@ class TestBodyPartCalculation(unittest.TestCase):
             16.651763584214756,
         ]
 
-        assert_array_equal(
+        assert_allclose(
             expected_paw1_vals,
             speed_df["paw1_speed (pixels per second)"].values,
+            rtol=1e-10,
         )
 
     def test_apply_convolution(self) -> None:
@@ -166,9 +167,10 @@ class TestBodyPartCalculation(unittest.TestCase):
             229.41590037276052,
             234.30539145236662,
         ]
-        assert_array_equal(
+        assert_allclose(
             expected_convolution,
             speed_df["paw1_speed (pixels per second)"].values,
+            rtol=1e-10,
         )
 
     def test_normalize_speed(self) -> None:
@@ -220,9 +222,10 @@ class TestBodyPartCalculation(unittest.TestCase):
             0.9208965892473638,
             0.9405234575291549,
         ]
-        assert_array_equal(
+        assert_allclose(
             expected_norm_vals,
             speed_df["paw1_speed (normalized)"].values,
+            rtol=1e-10,
         )
 
 

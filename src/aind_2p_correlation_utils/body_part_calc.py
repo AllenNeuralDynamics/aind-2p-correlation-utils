@@ -4,6 +4,7 @@ import re
 
 import numpy as np
 import pandas as pd
+from scipy.signal import oaconvolve
 from scipy.ndimage import median_filter
 
 BODY_PART_COLUMN_PATTERN = re.compile(r"(.*)_.*$")
@@ -155,7 +156,7 @@ def apply_convolution(df: pd.DataFrame, tau: float = 1.0) -> None:
     kernel = np.exp(-time_axis / tau)
     for speed_column in speed_columns:
         speed = df[speed_column]
-        convolved = np.convolve(speed, kernel, mode="full")
+        convolved = oaconvolve(speed, kernel, mode="full")
         convolved = convolved[: len(speed)]
         df[speed_column] = convolved
 
