@@ -58,9 +58,9 @@ class TestIoUtils(unittest.TestCase):
             "paw2_x",
             "paw2_y",
             "paw2_likelihood",
-            "paw2_norm_speed",
-            "paw1_norm_speed",
             "time (seconds)",
+            "paw2_speed (pixels per second)",
+            "paw1_speed (pixels per second)",
         ]
         expected_first_row = [
             [
@@ -70,13 +70,14 @@ class TestIoUtils(unittest.TestCase):
                 417.5814514160156,
                 328.6043701171875,
                 0.9950076937675476,
-                np.nan,
-                np.nan,
                 0.0,
+                np.nan,
+                np.nan,
             ]
         ]
+
         self.assertEqual(expected_columns, df.columns.values.tolist())
-        self.assertEqual("bodyparts_coords", df.index.name)
+        self.assertEqual("frames", df.index.name)
         assert_equal(expected_first_row, df[0:1].values.tolist())
 
 
