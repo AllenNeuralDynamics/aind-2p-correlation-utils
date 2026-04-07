@@ -1,3 +1,6 @@
+# ARCHIVE NOTICE!
+This repo is being archived.
+
 # aind-2p-correlation-utils
 
 [![License](https://img.shields.io/badge/license-MIT-brightgreen)](LICENSE)
